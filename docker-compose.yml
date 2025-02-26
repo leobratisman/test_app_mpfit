@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: laravel_app
+        ports:
+            - "8000:8000"
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            - test_db
+        command: bash -c "php artisan migrate --force && php artisan data:mock && php artisan serve --host=0.0.0.0 --port=8000"
+
+    test_db:
+        image: postgres:13-alpine
+        container_name: test_laravel_db
+        environment:
+            POSTGRES_SERVER: ${POSTGRES_SERVER}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_PORT: ${POSTGRES_PORT}
+            POSTGRES_DB: ${POSTGRES_DB}
+        ports:
+            - "${POSTGRES_OUTER_PORT}:${POSTGRES_PORT}"
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+
+
+volumes:
+    pgdata:
+        driver: local
